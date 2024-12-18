@@ -1,11 +1,141 @@
----
-title: Codewars
-sidebar_label: Introduction
-slug: /
----
+const express = require('express');
+const fetch = require('node-fetch');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 
-Codewars is a platform that helps you learn, train, and improve your coding skills by solving programming tasks of many types and difficulty levels. You choose how you would like to learn. Do you want to take on increasingly difficult challenges? Maybe you prefer training through repetition and by improving your solutions. After solving a task, compare your answer with other users and learn from them or help less experienced users by answering their questions.
+const app = express();
 
-By following this tutorial, you will learn how to create a new account on Codewars, configure it for an optimal training experience, and become familiar with basic elements of the user interface. Soon you will be able to face the challenges collected in Codewars' library and start learning!
+// Middleware
+app.use(bodyParser.json());
+app.use(cors()); // Allow requests from all origins
 
-If you haven't joined yet, read how to [register](/getting-started/registering/) a new account on Codewars.
+// Proxy endpoint
+app.post('/proxy', async (req, res) => {
+    const { url } = req.body;
+
+    // Validate the URL
+    if (!url || !url.startsWith('http')) {
+        return res.status(400).json({ error: 'Invalid URL. Please provide a valid HTTP or HTTPS URL.' });
+    }
+
+    try {
+        // Fetch the requested URL
+        const proxyResponse = await fetch(url);
+        const contentType = proxyResponse.headers.get('content-type');
+        
+        // Handle different content types
+        if (contentType && contentType.includes('application/json')) {
+            const data = await proxyResponse.json();
+            res.json(data);
+        } else {
+            const data = await proxyResponse.text();
+            res.send(data);
+        }
+    } catch (error) {
+        res.status(500).json({ error: `Error fetching the URL: ${error.message}` });
+    }
+});
+
+// Start the server
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Proxy server is running on http://localhost:${PORT}`);
+});
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width، initial-scale=1.0">
+    <title>Advanced Proxy</title>
+    <style>
+        body ｛
+            font-family: Arial، sans-serif;
+            text-align: center;
+            background: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        ｝
+        h1 ｛
+            margin: 20px 0;
+        ｝
+        .container ｛
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba（0، 0، 0، 0.1）;
+            border-radius: 8px;
+        ｝
+        input[type="text"] ｛
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        ｝
+        button ｛
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        ｝
+        button:hover ｛
+            background-color: #0056b3;
+        ｝
+        #response ｛
+            margin-top: 20px;
+            white-space: pre-wrap;
+            text-align: left;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        ｝
+    </style>
+</head>
+<body>
+    <h1>Advanced Proxy Client</h1>
+    <div class="container">
+        <p>Enter a URL to fetch content:</p>
+        <input type="text" id="urlInput" placeholder="Enter a valid URL">
+        <button onclick="fetchContent（）">Fetch</button>
+        <div id="response"></div>
+    </div>
+
+    <script>
+        async function fetchContent（） ｛
+            const urlInput = document.getElementById（'urlInput'）.value;
+            const responseDiv = document.getElementById（'response'）;
+
+            if （!urlInput） ｛
+                responseDiv.innerHTML = '<p style="color:red;">Please enter a valid URL.</p>';
+                return;
+            ｝
+
+            try ｛
+                const response = await fetch（'http://localhost:3000/proxy'، ｛
+                    method: 'POST'،
+                    headers: ｛ 'Content-Type': 'application/json' ｝،
+                    body: JSON.stringify（｛ url: urlInput ｝）
+                ｝）;
+
+                if （!response.ok） ｛
+                    const error = await response.json（）;
+                    responseDiv.innerHTML = `<p style="color:red;">Error: $｛error.error｝</p>`;
+                    return;
+                ｝
+
+                const data = await response.text（）;
+                responseDiv.innerHTML = `<pre>$｛data｝</pre>`;
+            ｝ catch （error） ｛
+                responseDiv.innerHTML = `<p style="color:red;">Error: $｛error.message｝</p>`;
+            ｝
+        ｝
+    </script>
+</body>
+</html>
+node proxy-server.js
+
